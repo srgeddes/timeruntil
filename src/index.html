@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en" class="h-100">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="../src/bootstrap/main.css">
+  <script src="../node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+  <title>Countdown Timer</title>
+  <style>
+    .blink-white {
+      background-color: white;
+    }
+    .blink-black {
+      background-color: black;
+      color: white;
+    }
+  </style>
+</head>
+<body class="d-flex flex-column h-100">
+  <main class="flex-grow-1 d-flex align-items-center">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-md-6">
+          <form id="countdownForm">
+            <div class="row mb-3">
+              <label for="dateInput" class="col-md-2 col-form-label">Date</label>
+              <div class="col-md-10">
+                <input type="date" class="form-control" id="dateInput">
+              </div>
+            </div>
+            <div class="row mb-3">
+              <label for="timeInput" class="col-md-2 col-form-label">Time</label>
+              <div class="col-md-10"> 
+                <input type="time" class="form-control" id="timeInput" step="1" required>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Start Timer</button>
+          </form>
+          <div id="timer" class="text-center mt-4 d-none display-4 fw-bold"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer mt-auto py-3 bg-light">
+    <div class="container text-center">
+      <span class="text-muted">&copy; 2024 Timer Until - Riley Geddes</span>
+    </div>
+  </footer>
+
+  <script>
+    function setDefaultValues() {
+      const now = new Date();
+      const tenMinutesLater = new Date(now.getTime() + 10 * 60000);
+
+      const dateInput = document.getElementById('dateInput');
+      const timeInput = document.getElementById('timeInput');
+
+      dateInput.value = now.toISOString().split('T')[0];
+      timeInput.value = tenMinutesLater.toTimeString().slice(0, 8);
+    }
+
+    setDefaultValues();
+
+    document.getElementById('countdownForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const dateInput = document.getElementById('dateInput').value;
+      const timeInput = document.getElementById('timeInput').value;
+      
+      const targetDate = new Date(dateInput + 'T' + timeInput);
+      
+      document.getElementById('countdownForm').classList.add('d-none');
+      document.getElementById('timer').classList.remove('d-none');
+      
+      function updateTimer() {
+        const now = new Date();
+        const difference = targetDate - now;
+        
+        if (difference > 0) {
+          const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+          const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+          const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+          const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+          
+          let timerString = '';
+          if (days > 0) timerString += `${days}d `;
+          if (hours > 0 || days > 0) timerString += `${hours}h `;
+          if (minutes > 0 || hours > 0 || days > 0) timerString += `${minutes}m `;
+          timerString += `${seconds}s`;
+          
+          document.getElementById('timer').innerHTML = timerString;
+        } else {
+          document.getElementById('timer').innerHTML = 'Timer Finished!';
+          clearInterval(timerInterval);
+          timerFinished();
+        }
+      }
+      
+      updateTimer();
+      const timerInterval = setInterval(updateTimer, 1000);
+
+      function timerFinished() {
+        const body = document.body;
+        let isWhite = true;
+        let blinkCount = 0;
+        const maxBlinks = 20;
+
+        function blink() {
+          if (blinkCount >= maxBlinks) {
+            body.classList.remove('blink-white', 'blink-black');
+            return;
+          }
+
+          if (isWhite) {
+            body.classList.remove('blink-white');
+            body.classList.add('blink-black');
+          } else {
+            body.classList.remove('blink-black');
+            body.classList.add('blink-white');
+          }
+
+          isWhite = !isWhite;
+          blinkCount++;
+
+          setTimeout(blink, 1000); 
+        }
+
+        blink();
+      }
+    });
+  </script>
+</body>
+</html>
